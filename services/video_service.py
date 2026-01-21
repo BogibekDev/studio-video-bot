@@ -38,3 +38,40 @@ def get_videos(video_id: str) -> list[dict]:
         return []
     
     return video_repo.get_videos_by_id(video_id.strip())
+
+
+async def delete_videos(bot, channel_id: int | str, video_id: str) -> dict:
+    """
+    Delete videos by ID: remove messages from channel and delete DB rows.
+
+    Args:
+        bot: aiogram Bot instance
+        channel_id: channel id where videos are stored
+        video_id: code to delete
+
+    Returns:
+        dict with counts: {"deleted_db": int, "deleted_channel": int, "failed_channel": int}
+    """
+    if not is_valid_video_id(video_id):
+        raise ValueError(f"Invalid video ID format: {video_id}")
+
+    videos = video_repo.get_videos_by_id(video_id.strip())
+    deleted_channel = 0
+    failed_channel = 0
+
+    for video in videos:
+        msg_id = video.get("channel_message_id") or 0
+        if not msg_id:
+            continue
+        try:
+            await bot.delete_message(chat_id=channel_id, message_id=msg_id)
+            deleted_channel += 1
+        except Exception:
+            failed_channel += 1
+
+    deleted_db = video_repo.delete_by_video_id(video_id.strip())
+    return {
+        "deleted_db": deleted_db,
+        "deleted_channel": deleted_channel,
+        "failed_channel": failed_channel,
+    }

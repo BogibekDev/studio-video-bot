@@ -65,4 +65,5 @@ async def handle_user_request(message: Message):
                 )
         except TelegramBadRequest:
             # Video not accessible (deleted/expired) -> skip
+            await message.answer("❌ Bu sana bo'yicha videolar topilmadi. Studiomizga murojaat qiling.")
             continue

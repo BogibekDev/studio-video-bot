@@ -53,3 +53,19 @@ def get_videos_by_id(video_id: str) -> list[dict]:
     
     # Convert Row objects to dictionaries
     return [dict(row) for row in rows]
+
+
+def delete_by_video_id(video_id: str) -> int:
+    """
+    Delete all videos by video ID
+
+    Returns:
+        Number of rows deleted
+    """
+    conn = get_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM videos WHERE video_id = ?", (video_id,))
+    deleted = cursor.rowcount
+    conn.commit()
+    conn.close()
+    return deleted
